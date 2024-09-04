@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/Descrout/payzigo/utils"
+	"github.com/Descrout/payzigo/payzigo/utils"
 )
 
 const (
