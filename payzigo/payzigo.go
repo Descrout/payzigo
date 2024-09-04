@@ -2,9 +2,12 @@ package payzigo
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 
+	"github.com/Descrout/payzigo/payzigo/requests"
+	"github.com/Descrout/payzigo/payzigo/responses"
 	"github.com/Descrout/payzigo/payzigo/utils"
 )
 
@@ -41,7 +44,12 @@ func (p *Payzigo) makeRequest(method string, endpoint string, data any) ([]byte,
 	pkiString := utils.GeneratePKIString(p.apiKey, randomString, p.secretKey, requestString)
 	hashedPki := utils.HashSha1(pkiString)
 
-	req, err := http.NewRequest(method, p.baseUrl+endpoint, bytes.NewBufferString(requestString))
+	reqBody, err := json.Marshal(&data)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(method, p.baseUrl+endpoint, bytes.NewReader(reqBody))
 	if err != nil {
 		return nil, err
 	}
@@ -55,8 +63,7 @@ func (p *Payzigo) makeRequest(method string, endpoint string, data any) ([]byte,
 	req.Header.Set("Authorization", utils.GenerateAuthorizationHeader(p.apiKey, hashedPki))
 	req.Header.Set("x-iyzi-rnd", randomString)
 
-	client := http.Client{}
-	resp, err := client.Do(req)
+	resp, err := p.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -68,4 +75,34 @@ func (p *Payzigo) makeRequest(method string, endpoint string, data any) ([]byte,
 	}
 
 	return rawBody, nil
+}
+
+func (p *Payzigo) CheckInstallments(req *requests.InstallmentRequest) (*responses.InstallmentResponse, error) {
+	rawData, err := p.makeRequest("POST", "/payment/iyzipos/installment", *req)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &responses.InstallmentResponse{}
+	err = json.Unmarshal(rawData, resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (p *Payzigo) CheckBin(req *requests.BinCheckRequest) (*responses.BinCheckResponse, error) {
+	rawData, err := p.makeRequest("POST", "/payment/bin/check", *req)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &responses.BinCheckResponse{}
+	err = json.Unmarshal(rawData, resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
