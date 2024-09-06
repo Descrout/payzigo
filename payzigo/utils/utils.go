@@ -52,6 +52,11 @@ func GeneratePKIString(apiKey string, randomString string, secretKey string, req
 
 func GenerateRequestString(v any) (res string) {
 	rv := reflect.ValueOf(v)
+
+	if rv.Kind() != reflect.Struct {
+		return fmt.Sprintf("%v", v)
+	}
+
 	num := rv.NumField()
 	for i := 0; i < num; i++ {
 		fv := rv.Field(i)

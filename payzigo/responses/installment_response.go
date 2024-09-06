@@ -6,8 +6,8 @@ type InstallmentResponse struct {
 	SystemTime         int                 `json:"systemTime"`
 	ConversationId     string              `json:"conversationId"`
 	InstallmentDetails []InstallmentDetail `json:"installmentDetails"`
-	ErrorCode          string              `json:"errorCode"`
-	ErrorMessage       string              `json:"errorMessage"`
+	ErrorCode          string              `json:"errorCode,omitempty"`
+	ErrorMessage       string              `json:"errorMessage,omitempty"`
 }
 
 type InstallmentDetail struct {

@@ -21,8 +21,8 @@ type BinCheckResponse struct {
 	BankName     string `json:"bankName"`
 	BankCode     int    `json:"bankCode"`
 	Commercial   int    `json:"commercial"`
-	ErrorCode    string `json:"errorCode"`
-	ErrorMessage string `json:"errorMessage"`
+	ErrorCode    string `json:"errorCode,omitempty"`
+	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 
 func (b *BinCheckResponse) GetSystemTime() time.Time {

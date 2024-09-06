@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/Descrout/payzigo/payzigo/requests"
@@ -40,6 +41,7 @@ func WithOptions(options *PayzigoOptions) *Payzigo {
 
 func (p *Payzigo) makeRequest(method string, endpoint string, data any) ([]byte, error) {
 	requestString := utils.GenerateRequestString(data)
+	log.Println(requestString)
 	randomString := utils.GenerateRandomString(8)
 	pkiString := utils.GeneratePKIString(p.apiKey, randomString, p.secretKey, requestString)
 	hashedPki := utils.HashSha1(pkiString)
@@ -99,6 +101,21 @@ func (p *Payzigo) CheckBin(req *requests.BinCheckRequest) (*responses.BinCheckRe
 	}
 
 	resp := &responses.BinCheckResponse{}
+	err = json.Unmarshal(rawData, resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (p *Payzigo) InitPayWithIyzico(req *requests.InitPWIRequest) (*responses.InitPWIResponse, error) {
+	rawData, err := p.makeRequest("POST", "/payment/pay-with-iyzico/initialize", *req)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &responses.InitPWIResponse{}
 	err = json.Unmarshal(rawData, resp)
 	if err != nil {
 		return nil, err
