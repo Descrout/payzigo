@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/Descrout/payzigo/payzigo"
 	"github.com/Descrout/payzigo/payzigo/requests"
@@ -42,13 +47,13 @@ func main() {
 	// }
 	// log.Println(binCheck)
 
-	pwiCheck, err := cli.InitPayWithIyzico(&requests.InitPWIRequest{
+	pwiInit, err := cli.InitPayWithIyzico(&requests.InitPWIRequest{
 		Locale:         "tr",
 		ConversationID: "2",
 		Price:          "119.98",
 		BasketID:       "2",
 		PaymentGroup:   "PRODUCT",
-		CallbackURL:    "https://webhook.site/baf81438-06d8-4dba-ad6d-22e94c6ce3b8",
+		CallbackURL:    "http://localhost:8888/payconfirm",
 		Currency:       "TRY",
 		PaidPrice:      "119.98",
 		EnabledInstallments: []int{
@@ -62,5 +67,48 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(pwiCheck)
+	log.Println(pwiInit)
+
+	port := ":8888"
+	server := &http.Server{
+		Addr:    port,
+		Handler: initRoutes(cli),
+	}
+	defer server.Shutdown(context.TODO())
+
+	// Serve on a seperate goroutine
+	log.Println("Listening on port:", port)
+	go func() {
+		server.ListenAndServe()
+		log.Println("Server shutdown gracefully.")
+	}()
+
+	// Wait for any closing signals
+	s := make(chan os.Signal, 1)
+	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, os.Interrupt, syscall.SIGQUIT)
+	<-s
+	log.Println("Shutting down...")
+}
+
+func initRoutes(cli *payzigo.Payzigo) *http.ServeMux {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/payconfirm", func(w http.ResponseWriter, r *http.Request) {
+		token := r.FormValue("token")
+
+		pwiCheck, err := cli.CheckPayWithIyzico(&requests.CheckPWIRequest{
+			ConversationID: "",
+			Locale:         "tr",
+			Token:          token,
+		})
+		if err != nil {
+			w.Write([]byte(err.Error()))
+			return
+		}
+		log.Println(pwiCheck)
+
+		json.NewEncoder(w).Encode(pwiCheck)
+	})
+
+	return mux
 }

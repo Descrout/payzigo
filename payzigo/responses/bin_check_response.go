@@ -18,11 +18,9 @@ type BinCheckResponse struct {
 	// Bonus, Axess, World, Maximum, Paraf, CardFinans, Advantage
 	CardFamily string `json:"cardFamily"`
 
-	BankName     string `json:"bankName"`
-	BankCode     int    `json:"bankCode"`
-	Commercial   int    `json:"commercial"`
-	ErrorCode    string `json:"errorCode,omitempty"`
-	ErrorMessage string `json:"errorMessage,omitempty"`
+	BankName   string `json:"bankName"`
+	BankCode   int    `json:"bankCode"`
+	Commercial int    `json:"commercial"`
 }
 
 func (b *BinCheckResponse) GetSystemTime() time.Time {

@@ -8,6 +8,4 @@ type InitPWIResponse struct {
 	Token                string `json:"token"`
 	TokenExpireTime      int    `json:"tokenExpireTime"`
 	PayWithIyzicoPageURL string `json:"payWithIyzicoPageUrl"`
-	ErrorCode            string `json:"errorCode,omitempty"`
-	ErrorMessage         string `json:"errorMessage,omitempty"`
 }
