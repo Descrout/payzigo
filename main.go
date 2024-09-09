@@ -47,13 +47,15 @@ func main() {
 	// }
 	// log.Println(binCheck)
 
+	port := ":8888"
+
 	pwiInit, err := cli.InitPayWithIyzico(&requests.InitPWIRequest{
 		Locale:         "tr",
 		ConversationID: "2",
 		Price:          "119.98",
 		BasketID:       "2",
 		PaymentGroup:   "PRODUCT",
-		CallbackURL:    "http://localhost:8888/payconfirm",
+		CallbackURL:    "http://localhost" + port + "/payconfirm",
 		Currency:       "TRY",
 		PaidPrice:      "119.98",
 		EnabledInstallments: []int{
@@ -69,7 +71,6 @@ func main() {
 	}
 	log.Println(pwiInit)
 
-	port := ":8888"
 	server := &http.Server{
 		Addr:    port,
 		Handler: initRoutes(cli),
@@ -108,6 +109,15 @@ func initRoutes(cli *payzigo.Payzigo) *http.ServeMux {
 		log.Println(pwiCheck)
 
 		json.NewEncoder(w).Encode(pwiCheck)
+	})
+
+	mux.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
+		data := map[string]any{}
+		json.NewDecoder(r.Body).Decode(&data)
+
+		for key, value := range data {
+			log.Println(key, value)
+		}
 	})
 
 	return mux
