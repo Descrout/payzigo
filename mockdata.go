@@ -55,8 +55,8 @@ var BasketItems = []common.BasketItem{
 	{
 		ID:        "i54321",
 		Price:     "89.99",
-		Name:      "Bluetooth Headphones",
-		Category1: "Electronics",
+		Name:      "%20 Discount Coupon",
+		Category1: "Games",
 		ItemType:  "VIRTUAL",
 	},
 }

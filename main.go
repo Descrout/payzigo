@@ -26,44 +26,44 @@ func main() {
 		SecretKey: os.Getenv("SECRET_KEY"),
 	})
 
-	// installments, err := cli.CheckInstallments(&requests.InstallmentRequest{
-	// 	Locale:         "tr",
-	// 	ConversationId: "1",
-	// 	BinNumber:      "454359",
-	// 	Price:          "2380.0",
-	// })
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.Println(installments)
+	installments, err := cli.CheckInstallments(&requests.InstallmentRequest{
+		Locale:         "tr",
+		ConversationId: "1",
+		BinNumber:      "454359", // one of the iyzico test cards
+		Price:          "2380.0",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(installments)
 
-	// binCheck, err := cli.CheckBin(&requests.BinCheckRequest{
-	// 	Locale:         "tr",
-	// 	ConversationId: "1",
-	// 	BinNumber:      "589283",
-	// })
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.Println(binCheck)
+	binCheck, err := cli.CheckBin(&requests.BinCheckRequest{
+		Locale:         "tr",
+		ConversationId: "1",
+		BinNumber:      "589283", // one of the iyzico test cards
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(binCheck)
 
 	port := ":8888"
 
 	pwiInit, err := cli.InitPayWithIyzico(&requests.InitPWIRequest{
-		Locale:         "tr",
-		ConversationID: "2",
-		Price:          "119.98",
-		BasketID:       "2",
-		PaymentGroup:   "PRODUCT",
-		CallbackURL:    "http://localhost" + port + "/payconfirm",
-		Currency:       "TRY",
-		PaidPrice:      "119.98",
-		EnabledInstallments: []int{
-			2,
-		},
+		Locale:              "tr",
+		ConversationID:      "1",
+		Price:               "119.98",
+		BasketID:            "1",
+		PaymentGroup:        "PRODUCT",
+		CallbackURL:         "http://localhost" + port + "/payconfirm",
+		Currency:            "TRY",
+		PaidPrice:           "119.98",
+		EnabledInstallments: []int{1},
+
+		// Check "mockdata.go" for these
 		Buyer:           Buyers[0],
 		ShippingAddress: Addresses[0],
-		BillingAddress:  Addresses[0],
+		BillingAddress:  Addresses[1],
 		BasketItems:     BasketItems,
 	})
 	if err != nil {
@@ -77,7 +77,7 @@ func main() {
 	}
 	defer server.Shutdown(context.TODO())
 
-	// Serve on a seperate goroutine
+	// Run webhook and callback server on a seperate goroutine
 	log.Println("Listening on port:", port)
 	go func() {
 		server.ListenAndServe()
@@ -98,7 +98,7 @@ func initRoutes(cli *payzigo.Payzigo) *http.ServeMux {
 		token := r.FormValue("token")
 
 		pwiCheck, err := cli.CheckPayWithIyzico(&requests.CheckPWIRequest{
-			ConversationID: "",
+			ConversationID: "1",
 			Locale:         "tr",
 			Token:          token,
 		})
@@ -112,9 +112,10 @@ func initRoutes(cli *payzigo.Payzigo) *http.ServeMux {
 	})
 
 	mux.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("------------- INCOMING WEBHOOK REQUEST -------------")
+
 		data := map[string]any{}
 		json.NewDecoder(r.Body).Decode(&data)
-
 		for key, value := range data {
 			log.Println(key, value)
 		}
