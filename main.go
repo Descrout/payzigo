@@ -50,7 +50,7 @@ func main() {
 	port := ":8888"
 
 	pwiInit, err := cli.InitPayWithIyzico(&requests.InitPWIRequest{
-		Locale:              "tr",
+		Locale:              "ru",
 		ConversationID:      "1",
 		Price:               "119.98",
 		BasketID:            "1",

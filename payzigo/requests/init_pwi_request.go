@@ -11,12 +11,13 @@ type InitPWIRequest struct {
 	// PRODUCT, LISTING, SUBSCRIPTION
 	PaymentGroup string `json:"paymentGroup"`
 
-	Buyer               common.Buyer        `json:"buyer"`
-	ShippingAddress     common.Address      `json:"shippingAddress"`
-	BillingAddress      common.Address      `json:"billingAddress"`
-	BasketItems         []common.BasketItem `json:"basketItems"`
-	CallbackURL         string              `json:"callbackUrl"`
-	Currency            string              `json:"currency"`
-	PaidPrice           string              `json:"paidPrice"`
-	EnabledInstallments []int               `json:"enabledInstallments"`
+	Buyer           common.Buyer        `json:"buyer"`
+	ShippingAddress common.Address      `json:"shippingAddress"`
+	BillingAddress  common.Address      `json:"billingAddress"`
+	BasketItems     []common.BasketItem `json:"basketItems"`
+	CallbackURL     string              `json:"callbackUrl"`
+	// TRY, USD, EUR, GBP, IRR
+	Currency            string `json:"currency"`
+	PaidPrice           string `json:"paidPrice"`
+	EnabledInstallments []int  `json:"enabledInstallments"`
 }
