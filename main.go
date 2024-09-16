@@ -26,26 +26,26 @@ func main() {
 		SecretKey: os.Getenv("SECRET_KEY"),
 	})
 
-	// installments, err := cli.CheckInstallments(&requests.InstallmentRequest{
-	// 	Locale:         "tr",
-	// 	ConversationId: "1",
-	// 	BinNumber:      "454359",
-	// 	Price:          "2380.0",
-	// })
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.Println(installments)
+	installments, err := cli.CheckInstallments(&requests.InstallmentRequest{
+		Locale:         "tr",
+		ConversationId: "1",
+		BinNumber:      "454359",
+		Price:          "2380.0",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(installments)
 
-	// binCheck, err := cli.CheckBin(&requests.BinCheckRequest{
-	// 	Locale:         "tr",
-	// 	ConversationId: "1",
-	// 	BinNumber:      "589283",
-	// })
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.Println(binCheck)
+	binCheck, err := cli.CheckBin(&requests.BinCheckRequest{
+		Locale:         "tr",
+		ConversationId: "1",
+		BinNumber:      "589283",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(binCheck)
 
 	pwiInit, err := cli.InitPayWithIyzico(&requests.InitPWIRequest{
 		Locale:         "tr",
@@ -53,7 +53,7 @@ func main() {
 		Price:          "119.98",
 		BasketID:       "2",
 		PaymentGroup:   "PRODUCT",
-		CallbackURL:    "http://localhost:8888/payconfirm",
+		CallbackURL:    "http://localhost:8888/pwiconfirm",
 		Currency:       "TRY",
 		PaidPrice:      "119.98",
 		EnabledInstallments: []int{
@@ -68,6 +68,27 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println(pwiInit)
+
+	threedsInit, err := cli.Init3ds(&requests.Init3dsRequest{
+		Locale:          "tr",
+		ConversationID:  "2",
+		Price:           "119.98",
+		PaidPrice:       "119.98",
+		Installment:     1,
+		BasketID:        "2",
+		PaymentGroup:    "PRODUCT",
+		CallbackURL:     "http://localhost:8888/3dsconfirm",
+		Currency:        "TRY",
+		Buyer:           Buyers[0],
+		ShippingAddress: Addresses[0],
+		BillingAddress:  Addresses[0],
+		BasketItems:     BasketItems,
+		PaymentCard:     Cards[0],
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(threedsInit.GetHtmlContent())
 
 	port := ":8888"
 	server := &http.Server{
@@ -93,7 +114,7 @@ func main() {
 func initRoutes(cli *payzigo.Payzigo) *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/payconfirm", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/pwiconfirm", func(w http.ResponseWriter, r *http.Request) {
 		token := r.FormValue("token")
 
 		pwiCheck, err := cli.CheckPayWithIyzico(&requests.CheckPWIRequest{
@@ -105,7 +126,22 @@ func initRoutes(cli *payzigo.Payzigo) *http.ServeMux {
 			w.Write([]byte(err.Error()))
 			return
 		}
-		log.Println(pwiCheck)
+
+		json.NewEncoder(w).Encode(pwiCheck)
+	})
+
+	mux.HandleFunc("/3dsconfirm", func(w http.ResponseWriter, r *http.Request) {
+		paymentId := r.FormValue("paymentId")
+		conversationData := r.FormValue("conversationData")
+
+		pwiCheck, err := cli.Auth3ds(&requests.Auth3dsRequest{
+			PaymentID:      paymentId,
+			ConversationID: conversationData,
+		})
+		if err != nil {
+			w.Write([]byte(err.Error()))
+			return
+		}
 
 		json.NewEncoder(w).Encode(pwiCheck)
 	})

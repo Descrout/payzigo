@@ -30,3 +30,11 @@ type BasketItem struct {
 	// PHYSICAL, VIRTUAL
 	ItemType string `json:"itemType"`
 }
+
+type PaymentCard struct {
+	CardHolderName string `json:"cardHolderName"`
+	CardNumber     string `json:"cardNumber"`
+	ExpireYear     string `json:"expireYear"`
+	ExpireMonth    string `json:"expireMonth"`
+	Cvc            string `json:"cvc"`
+}

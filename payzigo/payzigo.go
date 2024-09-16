@@ -131,13 +131,43 @@ func (p *Payzigo) InitPayWithIyzico(req *requests.InitPWIRequest) (*responses.In
 	return resp, nil
 }
 
-func (p *Payzigo) CheckPayWithIyzico(req *requests.CheckPWIRequest) (*responses.CheckPWIResponse, error) {
+func (p *Payzigo) CheckPayWithIyzico(req *requests.CheckPWIRequest) (*responses.PayCompleteResponse, error) {
 	rawData, err := p.makeRequest("POST", "/payment/iyzipos/checkoutform/auth/ecom/detail", *req)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := &responses.CheckPWIResponse{}
+	resp := &responses.PayCompleteResponse{}
+	err = json.Unmarshal(rawData, resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (p *Payzigo) Init3ds(req *requests.Init3dsRequest) (*responses.Init3dsResponse, error) {
+	rawData, err := p.makeRequest("POST", "/payment/3dsecure/initialize", *req)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &responses.Init3dsResponse{}
+	err = json.Unmarshal(rawData, resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (p *Payzigo) Auth3ds(req *requests.Auth3dsRequest) (*responses.PayCompleteResponse, error) {
+	rawData, err := p.makeRequest("POST", "/payment/3dsecure/auth", *req)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &responses.PayCompleteResponse{}
 	err = json.Unmarshal(rawData, resp)
 	if err != nil {
 		return nil, err

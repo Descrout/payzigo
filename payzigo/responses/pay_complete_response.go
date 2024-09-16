@@ -1,6 +1,6 @@
 package responses
 
-type CheckPWIResponse struct {
+type PayCompleteResponse struct {
 	// success, failure
 	Status                       string            `json:"status"`
 	Locale                       string            `json:"locale"`

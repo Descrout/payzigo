@@ -29,6 +29,23 @@ var Buyers = []common.Buyer{
 	},
 }
 
+var Cards = []common.PaymentCard{
+	{
+		CardHolderName: "Adil Basar",
+		CardNumber:     "5890040000000016",
+		ExpireYear:     "2028",
+		ExpireMonth:    "02",
+		Cvc:            "200",
+	},
+	{
+		CardHolderName: "Adil Basar",
+		CardNumber:     "5526080000000006",
+		ExpireYear:     "2028",
+		ExpireMonth:    "02",
+		Cvc:            "200",
+	},
+}
+
 var Addresses = []common.Address{
 	{
 		Address:     "789 Maple Road",
