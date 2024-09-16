@@ -28,8 +28,8 @@ func main() {
 
 	installments, err := cli.CheckInstallments(&requests.InstallmentRequest{
 		Locale:         "tr",
-		ConversationId: "1",
-		BinNumber:      "454359",
+		ConversationId: "2",
+		BinNumber:      "454359", // one of the iyzico test cards
 		Price:          "2380.0",
 	})
 	if err != nil {
@@ -39,8 +39,8 @@ func main() {
 
 	binCheck, err := cli.CheckBin(&requests.BinCheckRequest{
 		Locale:         "tr",
-		ConversationId: "1",
-		BinNumber:      "589283",
+		ConversationId: "2",
+		BinNumber:      "589283", // one of the iyzico test cards
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -51,17 +51,17 @@ func main() {
 		Locale:         "tr",
 		ConversationID: "2",
 		Price:          "119.98",
+		PaidPrice:      "119.98",
+		Currency:       "TRY",
 		BasketID:       "2",
 		PaymentGroup:   "PRODUCT",
 		CallbackURL:    "http://localhost:8888/pwiconfirm",
-		Currency:       "TRY",
-		PaidPrice:      "119.98",
 		EnabledInstallments: []int{
 			2,
 		},
 		Buyer:           Buyers[0],
 		ShippingAddress: Addresses[0],
-		BillingAddress:  Addresses[0],
+		BillingAddress:  Addresses[1],
 		BasketItems:     BasketItems,
 	})
 	if err != nil {
@@ -97,7 +97,7 @@ func main() {
 	}
 	defer server.Shutdown(context.TODO())
 
-	// Serve on a seperate goroutine
+	// Run webhook and callback server on a seperate goroutine
 	log.Println("Listening on port:", port)
 	go func() {
 		server.ListenAndServe()
@@ -118,7 +118,7 @@ func initRoutes(cli *payzigo.Payzigo) *http.ServeMux {
 		token := r.FormValue("token")
 
 		pwiCheck, err := cli.CheckPayWithIyzico(&requests.CheckPWIRequest{
-			ConversationID: "",
+			ConversationID: "1",
 			Locale:         "tr",
 			Token:          token,
 		})
@@ -144,6 +144,16 @@ func initRoutes(cli *payzigo.Payzigo) *http.ServeMux {
 		}
 
 		json.NewEncoder(w).Encode(pwiCheck)
+	})
+
+	mux.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("------------- INCOMING WEBHOOK REQUEST -------------")
+
+		data := map[string]any{}
+		json.NewDecoder(r.Body).Decode(&data)
+		for key, value := range data {
+			log.Println(key, value)
+		}
 	})
 
 	return mux
